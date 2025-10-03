@@ -1,11 +1,20 @@
-# backend/main.py
 import logging
-logging.basicConfig(level=logging.INFO)
-
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from aksharamukha.transliterate import process
+
+# Logging setup
+logging.basicConfig(
+    filename="transliteration.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+SUPPORTED_SCRIPTS = [
+    "Devanagari", "Telugu", "Kannada", "Gujarati", "Malayalam",
+    "Tamil", "Bengali", "Oriya", "Gurmukhi", "Sinhala", "Grantha"
+]
 
 class TranslitRequest(BaseModel):
     text: str
@@ -13,16 +22,14 @@ class TranslitRequest(BaseModel):
     from_script: str = None
 
 app = FastAPI(title="ScriptBridge API")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # narrow this for production
+    allow_origins=["*"],  # Dev only
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-@app.get("/")
-async def root():
-    return {"message": "Welcome to ScriptBridge API"}
 
 @app.get("/health")
 async def health():
@@ -30,8 +37,28 @@ async def health():
 
 @app.post("/transliterate")
 async def transliterate(req: TranslitRequest):
-    # TODO: integrate Aksharamukha/Bhashini here.
-    # Day-1: use a mock response (return same text or mark as mock)
-    mock = f"{req.text}"   # keep original for now
-    logging.info(f"Request: {req}")
-    return {"original": req.text, "transliteration": mock, "to_script": req.to_script}
+    try:
+        from_script = req.from_script or "Devanagari"
+        to_script = req.to_script
+
+        logging.info(f"Request: {req.text} | From: {from_script} → To: {to_script}")
+
+        # Validate script names
+        if from_script not in SUPPORTED_SCRIPTS or to_script not in SUPPORTED_SCRIPTS:
+            error_msg = f"Unsupported script. Supported: {SUPPORTED_SCRIPTS}"
+            logging.warning(error_msg)
+            return {"error": error_msg}
+
+        # Transliterate using Aksharamukha
+        result = process(from_script, to_script, req.text)
+
+        return {
+            "original": req.text,
+            "transliteration": result,
+            "from_script": from_script,
+            "to_script": to_script
+        }
+
+    except Exception as e:
+        logging.error(f"Unhandled error: {e}")
+        return {"error": "Internal server error"}
