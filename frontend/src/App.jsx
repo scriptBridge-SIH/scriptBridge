@@ -1,26 +1,28 @@
-import { useState } from "react";
-
-const SCRIPTS = ["Devanagari", "Telugu", "Tamil", "Malayalam", "Gurmukhi", "Bengali"];
+import { useState, useEffect } from "react";
 
 export default function App() {
   const [text, setText] = useState("");
   const [toScript, setToScript] = useState("Devanagari");
+  const [scriptList, setScriptList] = useState([
+    "Devanagari", "Telugu", "Tamil", "Malayalam", "Gurmukhi", "Bengali"
+  ]);
   const [out, setOut] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function callBackend(baseUrl, payload) {
-    const res = await fetch(`${baseUrl}/transliterate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error("API error");
-    return res.json();
-  }
+useEffect(() => {
+  fetch("http://localhost:8000/scripts")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("Fetched scripts:", data.supported_scripts);
+      const sorted = [...(data.supported_scripts || [])].sort();
+      if (sorted.length > 0) setScriptList(sorted);
+    })
+    .catch(() => console.log("Script fetch failed"));
+}, []);
 
   async function handleSubmit(e) {
-    e?.preventDefault();
+    e.preventDefault();
     setLoading(true);
     setError("");
     setOut("");
@@ -28,12 +30,12 @@ export default function App() {
     const payload = { text, to_script: toScript };
 
     try {
-      let j;
-      try {
-        j = await callBackend("http://localhost:8000", payload);
-      } catch {
-        j = await callBackend("http://127.0.0.1:8000", payload);
-      }
+      const res = await fetch("http://localhost:8000/transliterate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const j = await res.json();
       setOut(j.transliteration || j.original);
     } catch (err) {
       setError("Backend error: " + err.message);
@@ -51,7 +53,7 @@ export default function App() {
     try {
       const res = await fetch("http://localhost:8000/ocr", {
         method: "POST",
-        body: formData,
+        body: formData
       });
       const j = await res.json();
       setText(j.text || "");
@@ -64,7 +66,6 @@ export default function App() {
     <div style={{ maxWidth: 800, margin: "32px auto", fontFamily: "sans-serif" }}>
       <h1>ScriptBridge — Prototype</h1>
 
-      {/* Drag-and-drop zone */}
       <div
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
@@ -92,19 +93,18 @@ export default function App() {
           rows={4}
           style={{ width: "100%" }}
         />
+
         <div style={{ marginTop: 8 }}>
           <label>Target script</label>
           <select
             value={toScript}
             onChange={(e) => setToScript(e.target.value)}
-            style={{ marginLeft: 8 }}
           >
-            {SCRIPTS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
+            {scriptList.map((s) => (
+              <option key={s} value={s}>{s}</option>
+          ))}
           </select>
+
           <button type="submit" style={{ marginLeft: 16 }} disabled={loading}>
             Transliterate
           </button>

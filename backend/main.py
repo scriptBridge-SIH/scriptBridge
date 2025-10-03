@@ -1,100 +1,62 @@
-import re
-
-def guess_script(text):
-    if re.search(r'[\u0900-\u097F]', text):
-        return "Devanagari"
-    elif re.search(r'[\u0C00-\u0C7F]', text):
-        return "Telugu"
-    elif re.search(r'[\u0B80-\u0BFF]', text):
-        return "Tamil"
-    elif re.search(r'[\u0D00-\u0D7F]', text):
-        return "Malayalam"
-    elif re.search(r'[\u0A00-\u0A7F]', text):
-        return "Gurmukhi"
-    elif re.search(r'[\u0980-\u09FF]', text):
-        return "Bengali"
-    else:
-        return "Devanagari"  # fallback
-
-
-import io
-import logging
 from fastapi import FastAPI, UploadFile, File
-from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image
+from pydantic import BaseModel
+from aksharamukha import transliterate
+import cv2
+import numpy as np
 import pytesseract
-from aksharamukha.transliterate import process
+import logging
 
-# 🔧 Tesseract setup
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+app = FastAPI()
 
-SUPPORTED_SCRIPTS = [
-    "Devanagari", "Telugu", "Kannada", "Gujarati", "Malayalam",
-    "Tamil", "Bengali", "Oriya", "Gurmukhi", "Sinhala", "Grantha"
-]
-
-class TranslitRequest(BaseModel):
-    text: str
-    to_script: str
-    from_script: str = None
-
-app = FastAPI(title="ScriptBridge API")
-
+# CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
+# Request model
+class TranslitRequest(BaseModel):
+    text: str
+    to_script: str
+    from_script: str | None = None
+    pre_options: list[str] | None = None
+    post_options: list[str] | None = None
 
-@app.post("/ocr")
-async def ocr(file: UploadFile = File(...)):
-    try:
-        contents = await file.read()
-        try:
-            image = Image.open(io.BytesIO(contents))
-        except Exception as e:
-            logging.error(f"Image open failed: {e}")
-            return {"error": "Invalid image format"}
-
-        text = pytesseract.image_to_string(image, lang="hin+tel+tam").strip()
-        if not text:
-            return {"error": "No text detected"}
-
-        return {"text": text}
-    except Exception as e:
-        logging.error(f"OCR failed: {e}")
-        return {"error": str(e)}
-
-@app.post("/transliterate")
-async def transliterate(req: TranslitRequest):
-    try:
-        from_script = req.from_script or guess_script(req.text)
-        to_script = req.to_script
-
-        if from_script not in SUPPORTED_SCRIPTS or to_script not in SUPPORTED_SCRIPTS:
-            return {"error": f"Unsupported script. Supported: {SUPPORTED_SCRIPTS}"}
-
-        result = process(from_script, to_script, req.text, nativize=True)
-
-        return {
-            "original": req.text,
-            "transliteration": result,
-            "from_script": from_script,
-            "to_script": to_script  
-        }
-
-    except Exception as e:
-        logging.error(f"Transliteration failed: {e}")
-        return {"error": "Transliteration error"}
-
-
+# Get all supported scripts
 @app.get("/scripts")
 async def get_scripts():
-    return {"supported_scripts": SUPPORTED_SCRIPTS}
+    return {"supported_scripts": transliterate.getAvailableScripts()}
+
+# Transliterate text
+@app.post("/transliterate")
+async def transliterate_text(req: TranslitRequest):
+    from_script = req.from_script or "autodetect"
+    try:
+        result = transliterate.process(
+            from_script,
+            req.to_script,
+            req.text,
+            False,
+            pre_options=req.pre_options or [],
+            post_options=req.post_options or []
+        )
+        return {"transliteration": result}
+    except Exception as e:
+        logging.error(f"Transliteration error: {e}")
+        return {"original": req.text}
+
+# OCR from image
+@app.post("/ocr")
+async def ocr_image(file: UploadFile = File(...)):
+    try:
+        img = np.frombuffer(await file.read(), np.uint8)
+        image = cv2.imdecode(img, cv2.IMREAD_COLOR)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        text = pytesseract.image_to_string(gray, lang="eng+hin+kan+tel+tam")
+        return {"text": text.strip()}
+    except Exception as e:
+        logging.error(f"OCR error: {e}")
+        return {"text": ""}
