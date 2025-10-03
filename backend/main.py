@@ -1,19 +1,14 @@
 import io
 import logging
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
+import pytesseract
 from aksharamukha.transliterate import process
 
-import pytesseract
-from PIL import Image
-
-# Logging setup
-logging.basicConfig(
-    filename="transliteration.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+# 🔧 Tesseract setup
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 SUPPORTED_SCRIPTS = [
     "Devanagari", "Telugu", "Kannada", "Gujarati", "Malayalam",
@@ -29,7 +24,7 @@ app = FastAPI(title="ScriptBridge API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Dev only
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,21 +34,34 @@ app.add_middleware(
 async def health():
     return {"status": "ok"}
 
+@app.post("/ocr")
+async def ocr(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        try:
+            image = Image.open(io.BytesIO(contents))
+        except Exception as e:
+            logging.error(f"Image open failed: {e}")
+            return {"error": "Invalid image format"}
+
+        text = pytesseract.image_to_string(image, lang="hin+tel+tam").strip()
+        if not text:
+            return {"error": "No text detected"}
+
+        return {"text": text}
+    except Exception as e:
+        logging.error(f"OCR failed: {e}")
+        return {"error": str(e)}
+
 @app.post("/transliterate")
 async def transliterate(req: TranslitRequest):
     try:
         from_script = req.from_script or "Devanagari"
         to_script = req.to_script
 
-        logging.info(f"Request: {req.text} | From: {from_script} → To: {to_script}")
-
-        # Validate script names
         if from_script not in SUPPORTED_SCRIPTS or to_script not in SUPPORTED_SCRIPTS:
-            error_msg = f"Unsupported script. Supported: {SUPPORTED_SCRIPTS}"
-            logging.warning(error_msg)
-            return {"error": error_msg}
+            return {"error": f"Unsupported script. Supported: {SUPPORTED_SCRIPTS}"}
 
-        # Transliterate using Aksharamukha
         result = process(from_script, to_script, req.text)
 
         return {
@@ -64,16 +72,5 @@ async def transliterate(req: TranslitRequest):
         }
 
     except Exception as e:
-        logging.error(f"Unhandled error: {e}")
-        return {"error": "Internal server error"}
-
-@app.post("/ocr")
-async def ocr(file: UploadFile = File(...)):
-    try:
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents))
-        text = pytesseract.image_to_string(image)
-        return {"text": text}
-    except Exception as e:
-        logging.error(f"OCR failed: {e}")
-        return {"error": "OCR error"}
+        logging.error(f"Transliteration failed: {e}")
+        return {"error": "Transliteration error"}
