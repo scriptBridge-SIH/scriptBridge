@@ -28,12 +28,10 @@ export default function App() {
     const payload = { text, to_script: toScript };
 
     try {
-      // Try localhost first
       let j;
       try {
         j = await callBackend("http://localhost:8000", payload);
       } catch {
-        // If fails, fallback to 127.0.0.1
         j = await callBackend("http://127.0.0.1:8000", payload);
       }
       setOut(j.transliteration || j.original);
@@ -44,10 +42,32 @@ export default function App() {
     }
   }
 
+  async function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("http://localhost:8000/ocr", {
+        method: "POST",
+        body: formData,
+      });
+      const j = await res.json();
+      setText(j.text || "");
+    } catch (err) {
+      setError("OCR error: " + err.message);
+    }
+  }
+
   return (
     <div style={{ maxWidth: 800, margin: "32px auto", fontFamily: "sans-serif" }}>
       <h1>ScriptBridge — Prototype</h1>
+
       <form onSubmit={handleSubmit}>
+        <label>Upload image for OCR</label><br />
+        <input type="file" accept="image/*" onChange={handleFile} style={{ marginBottom: 16 }} />
+
         <label>Input text (any script)</label><br />
         <textarea
           value={text}
@@ -55,6 +75,7 @@ export default function App() {
           rows={4}
           style={{ width: "100%" }}
         />
+
         <div style={{ marginTop: 8 }}>
           <label>Target script</label>
           <select
