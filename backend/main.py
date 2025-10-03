@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import pytesseract
-from aksharamukha.transliterate import process
+from aksharamukha.transliterate import process 
+from aksharamukha import detect
 
 # 🔧 Tesseract setup
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -56,7 +57,7 @@ async def ocr(file: UploadFile = File(...)):
 @app.post("/transliterate")
 async def transliterate(req: TranslitRequest):
     try:
-        from_script = req.from_script or "Devanagari"
+        from_script = req.from_script or detect.detectScript(req.text)
         to_script = req.to_script
 
         if from_script not in SUPPORTED_SCRIPTS or to_script not in SUPPORTED_SCRIPTS:
@@ -68,7 +69,7 @@ async def transliterate(req: TranslitRequest):
             "original": req.text,
             "transliteration": result,
             "from_script": from_script,
-            "to_script": to_script
+            "to_script": to_script  
         }
 
     except Exception as e:

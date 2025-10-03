@@ -64,10 +64,27 @@ export default function App() {
     <div style={{ maxWidth: 800, margin: "32px auto", fontFamily: "sans-serif" }}>
       <h1>ScriptBridge — Prototype</h1>
 
-      <form onSubmit={handleSubmit}>
-        <label>Upload image for OCR</label><br />
-        <input type="file" accept="image/*" onChange={handleFile} style={{ marginBottom: 16 }} />
+      {/* Drag-and-drop zone */}
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const file = e.dataTransfer.files[0];
+          if (file) handleFile({ target: { files: [file] } });
+        }}
+        style={{
+          border: "2px dashed #ccc",
+          padding: "16px",
+          marginBottom: "16px",
+          textAlign: "center",
+          cursor: "pointer"
+        }}
+      >
+        <p>Drag & drop an image here, or click to upload</p>
+        <input type="file" accept="image/*" onChange={handleFile} />
+      </div>
 
+      <form onSubmit={handleSubmit}>
         <label>Input text (any script)</label><br />
         <textarea
           value={text}
@@ -75,7 +92,6 @@ export default function App() {
           rows={4}
           style={{ width: "100%" }}
         />
-
         <div style={{ marginTop: 8 }}>
           <label>Target script</label>
           <select
@@ -91,6 +107,17 @@ export default function App() {
           </select>
           <button type="submit" style={{ marginLeft: 16 }} disabled={loading}>
             Transliterate
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setText("");
+              setOut("");
+              setError("");
+            }}
+            style={{ marginLeft: 8 }}
+          >
+            Clear
           </button>
         </div>
       </form>
