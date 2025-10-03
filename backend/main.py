@@ -1,8 +1,12 @@
+import io
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from aksharamukha.transliterate import process
+
+import pytesseract
+from PIL import Image
 
 # Logging setup
 logging.basicConfig(
@@ -62,3 +66,14 @@ async def transliterate(req: TranslitRequest):
     except Exception as e:
         logging.error(f"Unhandled error: {e}")
         return {"error": "Internal server error"}
+
+@app.post("/ocr")
+async def ocr(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
+        text = pytesseract.image_to_string(image)
+        return {"text": text}
+    except Exception as e:
+        logging.error(f"OCR failed: {e}")
+        return {"error": "OCR error"}
