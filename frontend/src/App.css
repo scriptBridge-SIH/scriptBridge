@@ -1,4 +1,4 @@
-/* Full-screen layout */
+/* Full-screen layout using flexbox */
 body {
   margin: 0;
   padding: 0;
@@ -7,8 +7,37 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  overflow-x: hidden;
 }
+
+/* App container */
+.app {
+  width: 100%;
+  max-width: 700px;
+  min-height: calc(100vh - 64px);
+  margin: 32px 0;
+  padding: 32px 24px;
+  box-sizing: border-box;
+  background: #fefefe;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  body {
+    padding: 0 32px;
+  }
+}
+/* Header */
+h1 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+}
+
 body.dark h1 {
   color: #ffffff;
 }
@@ -16,39 +45,23 @@ body.dark h1 {
 body.dark {
   background: #232222;
 }
-/* App container */
-.app {
-  width: 100%;
-  max-width: 700px;
-  min-height: 100vh;
-  padding: 24px;
-  box-sizing: border-box;
-  background: #fefefe;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Responsive heading */
-h1 {
-  text-align: center;
-  margin-bottom: 24px;
-  font-size: 1.8rem;
-  color: #2a2a2a;
-}
 
 /* Dropzone */
 .dropzone {
   border: 2px dashed #bbb;
   border-radius: 8px;
-  padding: 16px;
+  padding: 20px;
   margin-bottom: 16px;
   text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
   background-color: #f6f7f9;
   color: #555;
-  cursor: pointer;
+}
+
+.dropzone:hover {
+  background-color: #fffbe6;
+  /* soft yellow tint */
 }
 
 /* Textarea */
@@ -61,15 +74,21 @@ textarea {
   resize: vertical;
   background-color: #f4f6f8;
   color: #333;
-  box-sizing: border-box;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #6a8edb;
+  box-shadow: 0 0 0 2px rgba(106, 142, 219, 0.2);
 }
 
 /* Controls */
 .controls {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 12px;
+  flex-wrap: wrap;
 }
 
 select {
@@ -79,32 +98,37 @@ select {
   font-size: 1rem;
   background-color: #f4f6f8;
   color: #333;
-  width: 100%;
 }
 
 /* Buttons */
 .buttons {
   display: flex;
-  flex-direction: row;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 button {
-  flex: 1;
-  padding: 10px;
+  padding: 8px 16px;
   border: none;
   border-radius: 8px;
   background: #6a8edb;
   color: white;
-  font-size: 0.95rem;
   cursor: pointer;
+  font-size: 0.95rem;
   transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #4f73c9;
 }
 
 .clear-btn {
   background: #f6c26b;
+  /* warm yellow */
   color: #222;
+}
+
+.clear-btn:hover {
+  background: #e0b05f;
 }
 
 /* Output */
@@ -117,52 +141,50 @@ button {
 }
 
 .output-text {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   margin: 12px 0;
   color: #2e7d32;
+  /* soft green */
   word-wrap: break-word;
 }
 
 /* Error */
 .error {
   color: #d9534f;
+  /* muted red */
   margin-top: 12px;
   font-weight: 500;
 }
 
-/* Dark mode toggle */
-.dark-toggle {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  padding: 6px 12px;
-  font-size: 14px;
-  background-color: #6a8edb;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 1000;
+/* 🌙 Dark Mode Styles */
+.app.dark {
+  background-color: #1c1c1c;
+  color: #e0e0e0;
 }
 
-/* Responsive tweaks */
-@media (max-width: 480px) {
-  h1 {
-    font-size: 1.4rem;
-  }
+.app.dark .dropzone,
+.app.dark .output,
+.app.dark textarea,
+.app.dark select {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #555;
+}
 
-  .buttons {
-    flex-direction: column;
-  }
+.app.dark button {
+  background-color: #4f73c9;
+  color: #fff;
+}
 
-  button {
-    width: 100%;
-  }
+.app.dark .clear-btn {
+  background-color: #f4b400;
+  color: #222;
+}
 
-  .dark-toggle {
-    top: 8px;
-    right: 8px;
-    font-size: 12px;
-    padding: 4px 8px;
-  }
+.app.dark .error {
+  color: #ef5350;
+}
+
+.app.dark .output-text {
+  color: #81c784;
 }
