@@ -78,7 +78,7 @@ export default function App() {
         {darkMode ? "🌞 Light Mode" : "🌙 Dark Mode"}
       </button>
 
-      <h1>🪶 ScriptBridge — Prototype</h1>
+      <h1>🧾 ScriptBridge — Version 1.0</h1>
 
       <div
         className="dropzone"
