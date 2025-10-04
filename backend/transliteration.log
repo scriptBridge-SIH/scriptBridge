@@ -31,3 +31,5 @@
 2025-10-04 22:34:25,696 - ERROR - Script fetch error: module 'aksharamukha.transliterate' has no attribute 'Scripts'
 2025-10-04 22:59:20,813 - ERROR - Script fetch error: module 'aksharamukha.transliterate' has no attribute 'Scripts'
 2025-10-04 22:59:20,823 - ERROR - Script fetch error: module 'aksharamukha.transliterate' has no attribute 'Scripts'
+2025-10-04 23:33:02,127 - ERROR - Script fetch error: module 'aksharamukha.transliterate' has no attribute 'getAvailableScripts'
+2025-10-04 23:33:02,131 - ERROR - Script fetch error: module 'aksharamukha.transliterate' has no attribute 'getAvailableScripts'

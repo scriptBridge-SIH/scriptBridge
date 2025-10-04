@@ -26,7 +26,8 @@ app = FastAPI()
 # CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # or your frontend domain
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -43,7 +44,7 @@ class TranslitRequest(BaseModel):
 @app.get("/scripts")
 async def get_scripts():
     try:
-        scripts = list(transliterate.Scripts.keys())
+        scripts = list(transliterate.getAvailableScripts().keys())
         return {"supported_scripts": sorted(scripts)}
     except Exception as e:
         logging.error(f"Script fetch error: {e}")
