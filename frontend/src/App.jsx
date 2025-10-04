@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -12,11 +12,12 @@ export default function App() {
   ]);
   const [out, setOut] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ocrLoading, setOcrLoading] = useState(false);
   const [error, setError] = useState("");
+  const fileInputRef = useRef();
 
-  // 🔄 Apply dark class to <body>
   useEffect(() => {
-    document.body.className = darkMode ? "dark" : "";
+    document.body.className = darkMode ? "dark" : "light";
   }, [darkMode]);
 
   useEffect(() => {
@@ -57,6 +58,9 @@ export default function App() {
     const formData = new FormData();
     formData.append("file", file);
 
+    setOcrLoading(true);
+    setError("");
+
     try {
       const res = await fetch(`${API_BASE}/ocr`, {
         method: "POST",
@@ -66,15 +70,14 @@ export default function App() {
       setText(j.text || "");
     } catch (err) {
       setError("OCR error: " + err.message);
+    } finally {
+      setOcrLoading(false);
     }
   }
 
   return (
     <div className={`app ${darkMode ? "dark" : "light"}`}>
-      <button
-        className="dark-toggle"
-        onClick={() => setDarkMode(!darkMode)}
-      >
+      <button className="dark-toggle" onClick={() => setDarkMode(!darkMode)}>
         {darkMode ? "🌞 Light Mode" : "🌙 Dark Mode"}
       </button>
 
@@ -82,6 +85,7 @@ export default function App() {
 
       <div
         className="dropzone"
+        onClick={() => fileInputRef.current?.click()}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
@@ -90,12 +94,26 @@ export default function App() {
         }}
       >
         <p>Drag & drop an image here, or click to upload</p>
-        <input type="file" accept="image/*" onChange={handleFile} />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFile}
+          ref={fileInputRef}
+          style={{ display: "none" }}
+        />
       </div>
+
+      {ocrLoading && (
+        <div className="spinner">
+          <div className="loader"></div>
+          <p>Extracting text from image…</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <label>Input text</label>
         <textarea
+          className="text-input"
           placeholder="Enter text here..."
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -112,6 +130,7 @@ export default function App() {
           <div>
             <label>Target script</label>
             <select
+              className="script-select"
               value={toScript}
               onChange={(e) => setToScript(e.target.value)}
             >

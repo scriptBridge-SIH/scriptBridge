@@ -1,17 +1,34 @@
-/* Full-screen layout using flexbox */
+/* 🌐 Base layout */
 body {
   margin: 0;
   padding: 0;
   font-family: "Inter", sans-serif;
-  background: #f2f4f6;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   overflow-x: hidden;
+  background: var(--bg);
+  color: var(--text);
 }
 
-/* App container */
+body.light {
+  --bg: #f2f4f6;
+  --text: #222;
+  --input-bg: #ffffff;
+  --input-text: #222;
+  --input-border: #ccc;
+}
+
+body.dark {
+  --bg: #232222;
+  --text: #e0e0e0;
+  --input-bg: #1e1e1e;
+  --input-text: #eee;
+  --input-border: #555;
+}
+
+/* 📦 App container */
 .app {
   width: 100%;
   max-width: 700px;
@@ -19,70 +36,71 @@ body {
   margin: 32px 0;
   padding: 32px 24px;
   box-sizing: border-box;
-  background: #fefefe;
+  background: var(--card-bg);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
 }
 
-@media (min-width: 1024px) {
-  body {
-    padding: 0 32px;
-  }
+body.light .app {
+  --card-bg: #fefefe;
 }
-/* Header */
+
+body.dark .app {
+  --card-bg: #1c1c1c;
+}
+
+/* 🧾 Header */
 h1 {
   text-align: center;
   margin-bottom: 24px;
-  color: #333;
+  color: var(--text);
 }
 
-body.dark h1 {
-  color: #ffffff;
-}
-
-body.dark {
-  background: #232222;
-}
-
-/* Dropzone */
+/* 📤 Dropzone */
 .dropzone {
   border: 2px dashed #bbb;
   border-radius: 8px;
-  padding: 20px;
+  padding: 16px;
   margin-bottom: 16px;
   text-align: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
   background-color: #f6f7f9;
   color: #555;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .dropzone:hover {
   background-color: #fffbe6;
-  /* soft yellow tint */
 }
 
-/* Textarea */
-textarea {
+.app.dark .dropzone {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+/* 📝 Textarea */
+.text-input {
   width: 100%;
   font-size: 1rem;
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--input-text);
   resize: vertical;
-  background-color: #f4f6f8;
-  color: #333;
+  box-sizing: border-box;
 }
 
-textarea:focus {
+.text-input:focus {
   outline: none;
   border-color: #6a8edb;
   box-shadow: 0 0 0 2px rgba(106, 142, 219, 0.2);
 }
 
-/* Controls */
+/* 🎯 Controls */
 .controls {
   display: flex;
   justify-content: space-between;
@@ -91,19 +109,33 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
-select {
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #bbb;
-  font-size: 1rem;
-  background-color: #f4f6f8;
-  color: #333;
+.controls label {
+  color: var(--text);
 }
 
-/* Buttons */
+/* 🔡 Select */
+.script-select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  box-sizing: border-box;
+}
+
+.script-select:focus {
+  outline: none;
+  border-color: #6a8edb;
+  box-shadow: 0 0 0 2px rgba(106, 142, 219, 0.2);
+}
+
+/* 🔘 Buttons */
 .buttons {
   display: flex;
   gap: 10px;
+  margin-top: 12px;
 }
 
 button {
@@ -123,52 +155,11 @@ button:hover {
 
 .clear-btn {
   background: #f6c26b;
-  /* warm yellow */
   color: #222;
 }
 
 .clear-btn:hover {
   background: #e0b05f;
-}
-
-/* Output */
-.output {
-  margin-top: 24px;
-  padding: 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #f3f4f6;
-}
-
-.output-text {
-  font-size: 1.4rem;
-  margin: 12px 0;
-  color: #2e7d32;
-  /* soft green */
-  word-wrap: break-word;
-}
-
-/* Error */
-.error {
-  color: #d9534f;
-  /* muted red */
-  margin-top: 12px;
-  font-weight: 500;
-}
-
-/* 🌙 Dark Mode Styles */
-.app.dark {
-  background-color: #1c1c1c;
-  color: #e0e0e0;
-}
-
-.app.dark .dropzone,
-.app.dark .output,
-.app.dark textarea,
-.app.dark select {
-  background-color: #2a2a2a;
-  color: #e0e0e0;
-  border-color: #555;
 }
 
 .app.dark button {
@@ -181,10 +172,104 @@ button:hover {
   color: #222;
 }
 
-.app.dark .error {
-  color: #ef5350;
+/* 📤 Output */
+.output {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f3f4f6;
+}
+
+.output h3 {
+  color: var(--text);
+}
+
+.output-text {
+  font-size: 1.4rem;
+  margin: 12px 0;
+  color: #2e7d32;
+  word-wrap: break-word;
+}
+
+.app.dark .output {
+  background-color: #2a2a2a;
+  border-color: #555;
 }
 
 .app.dark .output-text {
   color: #81c784;
+}
+
+/* ⚠️ Error */
+.error {
+  color: #d9534f;
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+.app.dark .error {
+  color: #ef5350;
+}
+
+/* 🌙 Dark Mode Toggle */
+.dark-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #6a8edb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .dark-toggle {
+    top: 8px;
+    right: 8px;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
+
+/* ⏳ Spinner */
+.spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.loader {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #ccc;
+  border-top: 4px solid #6a8edb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
