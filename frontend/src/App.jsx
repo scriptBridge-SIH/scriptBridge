@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [text, setText] = useState("");
@@ -18,7 +20,7 @@ export default function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/scripts")
+    fetch(`${API_BASE}/scripts`)
       .then((res) => res.json())
       .then((data) => {
         const sorted = [...(data.supported_scripts || [])].sort();
@@ -35,7 +37,7 @@ export default function App() {
     const payload = { text, to_script: toScript };
 
     try {
-      const res = await fetch("http://localhost:8000/transliterate", {
+      const res = await fetch(`${API_BASE}/transliterate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -56,7 +58,7 @@ export default function App() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:8000/ocr", {
+      const res = await fetch(`${API_BASE}/ocr`, {
         method: "POST",
         body: formData
       });
@@ -76,7 +78,7 @@ export default function App() {
         {darkMode ? "🌞 Light Mode" : "🌙 Dark Mode"}
       </button>
 
-      <h1>🧾  ScriptBridge — Version 1.0</h1>
+      <h1>🪶 ScriptBridge — Prototype</h1>
 
       <div
         className="dropzone"
