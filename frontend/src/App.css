@@ -1,42 +1,181 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* Base layout */
+body {
+  margin: 0;
+  padding: 0;
+  background: #f2f4f6;
+  font-family: "Inter", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  color: #2c2c2c;
+}
+
+/* App container */
+.app {
+  max-width: 700px;
+  width: 90%;
+  background: #fefefe;
+  margin: 32px auto;
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+h1 {
   text-align: center;
+  margin-bottom: 24px;
+  color: #333;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+body.dark h1 {
+  color: #ffffff;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+body.dark {
+  background: #232222;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Dropzone */
+.dropzone {
+  border: 2px dashed #bbb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background-color: #f6f7f9;
+  color: #555;
 }
 
-.card {
-  padding: 2em;
+.dropzone:hover {
+  background-color: #fffbe6;
+  /* soft yellow tint */
 }
 
-.read-the-docs {
-  color: #888;
+/* Textarea */
+textarea {
+  width: 100%;
+  font-size: 1rem;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  background-color: #f4f6f8;
+  color: #333;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #6a8edb;
+  box-shadow: 0 0 0 2px rgba(106, 142, 219, 0.2);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+select {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  font-size: 1rem;
+  background-color: #f4f6f8;
+  color: #333;
+}
+
+/* Buttons */
+.buttons {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #6a8edb;
+  color: white;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #4f73c9;
+}
+
+.clear-btn {
+  background: #f6c26b;
+  /* warm yellow */
+  color: #222;
+}
+
+.clear-btn:hover {
+  background: #e0b05f;
+}
+
+/* Output */
+.output {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f3f4f6;
+}
+
+.output-text {
+  font-size: 1.4rem;
+  margin: 12px 0;
+  color: #2e7d32;
+  /* soft green */
+  word-wrap: break-word;
+}
+
+/* Error */
+.error {
+  color: #d9534f;
+  /* muted red */
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+/* 🌙 Dark Mode Styles */
+.app.dark {
+  background-color: #1c1c1c;
+  color: #e0e0e0;
+}
+
+.app.dark .dropzone,
+.app.dark .output,
+.app.dark textarea,
+.app.dark select {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+.app.dark button {
+  background-color: #4f73c9;
+  color: #fff;
+}
+
+.app.dark .clear-btn {
+  background-color: #f4b400;
+  color: #222;
+}
+
+.app.dark .error {
+  color: #ef5350;
+}
+
+.app.dark .output-text {
+  color: #81c784;
 }
