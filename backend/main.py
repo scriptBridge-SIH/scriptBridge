@@ -16,9 +16,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Set Tesseract path for Windows
 import os
-pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH", "tesseract")
+pytesseract.pytesseract.tesseract_cmd = os.getenv("tesseract","TESSERACT_PATH")
 
 
 # 🎯 Script list for dropdown
