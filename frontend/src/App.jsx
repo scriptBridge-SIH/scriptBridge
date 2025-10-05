@@ -6,7 +6,6 @@ const API_BASE =
     ? "http://localhost:8000"
     : "https://scriptbridge-back.onrender.com";
 
-
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [text, setText] = useState("");
@@ -97,7 +96,7 @@ export default function App() {
       setOcrLoading(false);
     }
   }
-  
+
   return (
     <div className={`app ${darkMode ? "dark" : "light"}`}>
       <button className="dark-toggle" onClick={() => setDarkMode(!darkMode)}>
@@ -195,6 +194,18 @@ export default function App() {
           </button>
         </div>
       )}
+
+      {/* 👇 Copyright Tagline */}
+      <div
+        style={{
+          textAlign: "center",
+          margin: "24px 0",
+          fontSize: "0.85rem",
+          color: darkMode ? "#aaa" : "#555",
+        }}
+      >
+        © 2025 ScriptBridge · Built by Prajwal Navada G P
+      </div>
     </div>
   );
 }
