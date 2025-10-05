@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 const API_BASE =
+  import.meta.env.VITE_API_URL ||
   "http://localhost:8000" ||
-  "https://d2lr0kbn-8000.inc1.devtunnels.ms/" || 
-  import.meta.env.VITE_API_URL;
+  "https://d2lr0kbn-8000.inc1.devtunnels.ms/";
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
