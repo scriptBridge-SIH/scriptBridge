@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:8000" ||
-  "https://d2lr0kbn-8000.inc1.devtunnels.ms/" ;
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:8000"
+    : "https://scriptbridge-back.onrender.com";
+
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
