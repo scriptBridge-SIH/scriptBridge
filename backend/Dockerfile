@@ -2,23 +2,12 @@
 FROM python:3.10-slim
 
 # Install system dependencies including Tesseract
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    tesseract-ocr-eng \
-    tesseract-ocr-hin \
-    tesseract-ocr-tam \
-    tesseract-ocr-kan \
-    tesseract-ocr-tel \
-    tesseract-ocr-ben \
-    tesseract-ocr-guj \
-    tesseract-ocr-panjabi \
-    tesseract-ocr-ori \
-    tesseract-ocr-mal \
-    libglib2.0-0 \
-    libsm6 \
-    libxrender1 \
-    libxext6 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y tesseract-ocr libglib2.0-0 libsm6 libxrender1 libxext6 && \
+    for lang in eng hin tam kan tel ben guj pan ori mal; do \
+    apt-get install -y tesseract-ocr-$lang; \
+    done && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
