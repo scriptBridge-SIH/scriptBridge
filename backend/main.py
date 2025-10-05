@@ -6,6 +6,8 @@ import pytesseract
 import numpy as np
 import cv2
 from aksharamukha import transliterate
+import langdetect
+import os
 
 app = FastAPI()
 
@@ -17,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import os
+# Tesseract path for Linux (Render) and Windows (local)
 pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH", "tesseract")
 
 # 🎯 Script list for dropdown
@@ -34,9 +36,30 @@ def get_scripts():
     ]
     return {"supported_scripts": sorted(scripts)}
 
-# 📷 OCR endpoint
+# 🔡 Transliteration model
+class TransliterationRequest(BaseModel):
+    text: str
+    to_script: str
+    from_script: Optional[str] = "autodetect"
+
+# 🌐 Language-to-script map for Aksharamukha
+lang_to_script = {
+    "en": "latn",
+    "hi": "dev",
+    "ta": "tam",
+    "kn": "kan",
+    "te": "tel",
+    "bn": "ben",
+    "gu": "guj",
+    "pa": "guru",
+    "ml": "mal",
+    "or": "ori",
+    "ur": "arab"
+}
+
+# 📷 OCR + Transliteration endpoint
 @app.post("/ocr_image")
-async def ocr_image(file: UploadFile = File(...)):
+async def ocr_image(file: UploadFile = File(...), to_script: Optional[str] = None):
     try:
         img_bytes = await file.read()
         img_array = np.frombuffer(img_bytes, np.uint8)
@@ -63,26 +86,46 @@ async def ocr_image(file: UploadFile = File(...)):
         if not clean_text:
             return {"text": "", "error": "OCR returned empty text"}
 
-        return {"text": clean_text}
+        # 🔍 Detect script from OCR text
+        try:
+            detected_lang = langdetect.detect(clean_text)
+            from_script = lang_to_script.get(detected_lang, "autodetect")
+            print(f"🔎 Detected language: {detected_lang} → Aksharamukha script: {from_script}")
+        except Exception as e:
+            print("⚠️ Language detection failed:", str(e))
+            from_script = "autodetect"
+
+        # 🔁 Transliterate if target script is provided
+        if to_script:
+            try:
+                transliterated = transliterate.process(
+                    src=from_script,
+                    tgt=to_script,
+                    txt=clean_text,
+                    nativize=False
+                )
+                return {
+                    "text": clean_text,
+                    "transliteration": transliterated,
+                    "from_script": from_script,
+                    "to_script": to_script
+                }
+            except Exception as e:
+                print("🔥 Transliteration error:", str(e))
+                return {"text": clean_text, "error": "Transliteration failed"}
+
+        return {"text": clean_text, "from_script": from_script}
 
     except Exception as e:
         print("🔥 OCR error:", str(e))
         return {"text": "", "error": str(e)}
-      
 
-# 🔡 Transliteration model
-class TransliterationRequest(BaseModel):
-    text: str
-    to_script: str
-    from_script: Optional[str] = "autodetect"
-
-
-# 🔁 Transliteration endpoint (local Aksharamukha)
+# 🔁 Standalone transliteration endpoint
 @app.post("/transliterate")
 async def transliterate_local(req: TransliterationRequest):
     try:
         output = transliterate.process(
-            src="autodetect",
+            src=req.from_script,
             tgt=req.to_script,
             txt=req.text,
             nativize=False

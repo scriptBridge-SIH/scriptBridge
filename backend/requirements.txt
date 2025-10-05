@@ -11,3 +11,4 @@ python-multipart
 loguru
 httpx
 opencv-python-headless
+langdetect
