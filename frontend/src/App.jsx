@@ -3,7 +3,7 @@ import "./App.css";
 
 const API_BASE =
   "http://localhost:8000" ||
-  "https://d2lr0kbn-8000.inc1.devtunnels.ms/" ||
+  "https://d2lr0kbn-8000.inc1.devtunnels.ms/" || 
   import.meta.env.VITE_API_URL;
 
 export default function App() {

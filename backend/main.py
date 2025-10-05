@@ -92,7 +92,7 @@ async def ocr_image(file: UploadFile = File(...), to_script: Optional[str] = Non
             from_script = lang_to_script.get(detected_lang, "autodetect")
             print(f"🔎 Detected language: {detected_lang} → Aksharamukha script: {from_script}")
         except Exception as e:
-            print("⚠️ Language detection failed:", str(e))
+            print("⚠️Language detection failed:", str(e))
             from_script = "autodetect"
 
         # 🔁 Transliterate if target script is provided
