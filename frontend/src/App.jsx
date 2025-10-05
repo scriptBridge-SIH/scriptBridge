@@ -1,14 +1,22 @@
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE =
+  "http://localhost:8000" ||
+  "https://d2lr0kbn-8000.inc1.devtunnels.ms/" ||
+  import.meta.env.VITE_API_URL;
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [text, setText] = useState("");
   const [toScript, setToScript] = useState("Devanagari");
   const [scriptList, setScriptList] = useState([
-    "Devanagari", "Telugu", "Tamil", "Malayalam", "Gurmukhi", "Bengali"
+    "Devanagari",
+    "Telugu",
+    "Tamil",
+    "Malayalam",
+    "Gurmukhi",
+    "Bengali",
   ]);
   const [out, setOut] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,7 +49,7 @@ export default function App() {
       const res = await fetch(`${API_BASE}/transliterate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       const j = await res.json();
       setOut(j.transliteration || j.original);
@@ -55,6 +63,7 @@ export default function App() {
   async function handleFile(e) {
     const file = e.target.files[0];
     if (!file) return;
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -62,33 +71,32 @@ export default function App() {
     setError("");
 
     try {
-  const res = await fetch(`${API_BASE}/ocr_image`, {
-    method: "POST",
-    body: formData
-  });
+      const res = await fetch(`${API_BASE}/ocr_image`, {
+        method: "POST",
+        body: formData,
+      });
 
-  if (!res.ok) {
-    throw new Error(`Server responded with ${res.status}`);
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`);
+      }
+
+      const j = await res.json();
+
+      if (!j.text) {
+        throw new Error(j.error || "No text returned from OCR");
+      }
+
+      setText(j.text);
+    } catch (err) {
+      console.error("OCR error:", err);
+      setError(
+        "OCR failed. If you're using Brave or an ad blocker, try disabling shields or whitelisting this site."
+      );
+    } finally {
+      setOcrLoading(false);
+    }
   }
-
-  const j = await res.json();
-
-  if (!j.text) {
-    throw new Error("No text returned from OCR");
-  }
-
-  setText(j.text);
-} catch (err) {
-  console.error("OCR error:", err);
-  setError(
-    "OCR failed. If you're using Brave or an ad blocker, try disabling shields or whitelisting this site."
-  );
-} finally {
-  setOcrLoading(false);
-}
-
-  }
-
+  
   return (
     <div className={`app ${darkMode ? "dark" : "light"}`}>
       <button className="dark-toggle" onClick={() => setDarkMode(!darkMode)}>
@@ -149,7 +157,9 @@ export default function App() {
               onChange={(e) => setToScript(e.target.value)}
             >
               {scriptList.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </div>

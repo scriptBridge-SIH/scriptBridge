@@ -1,133 +1,89 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from aksharamukha import transliterate
-import cv2
-import numpy as np
 import pytesseract
-import logging
-import httpx
-import os
-from dotenv import load_dotenv
-import warnings
-warnings.filterwarnings("ignore", category=SyntaxWarning)
-
-
-logging.basicConfig(
-    filename="transliteration.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
-# Load environment variables
-load_dotenv()
-BHASHINI_API_KEY = os.getenv("BHASHINI_API_KEY")
-BHASHINI_ENDPOINT = os.getenv("BHASHINI_ENDPOINT")
-pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
+import numpy as np
+import cv2
+from aksharamukha import transliterate
 
 app = FastAPI()
 
-# CORS for frontend
+# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or your frontend domain
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Request model
-class TranslitRequest(BaseModel):
-    text: str
-    to_script: str
-    from_script: str | None = None
-    pre_options: list[str] | None = None
-    post_options: list[str] | None = None
+# Set Tesseract path for Windows
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-# Get all supported scripts
+# 🎯 Script list for dropdown
 @app.get("/getScripts")
-async def get_scripts():
-    try:
-        scripts = list(transliterate.Scripts)
-        return {"supported_scripts": sorted(scripts)}
-    except Exception as e:
-        logging.error(f"Script fetch error: {e}")
-        return {"supported_scripts": []}
+def get_scripts():
+    scripts = [
+        "Ahom", "Arabic", "Assamese", "Balinese", "Bengali (Bangla)", "Brahmi", "Burmese (Myanmar)",
+        "Chakma", "Cham", "Devanagari", "Dogra", "Grantha", "Gujarati", "Hebrew", "Javanese", "Kaithi",
+        "Kannada", "Kharoshthi", "Khmer (Cambodian)", "Lao", "Lepcha", "Limbu", "Malayalam", "Modi",
+        "Mongolian (Ali Gali)", "Meetei Mayek (Manipuri)", "Multani", "Nandinagari", "Newa (Nepal Bhasa)",
+        "Oriya (Odia)", "Punjabi (Gurmukhi)", "Ranjana (Lantsa)", "Rejang", "Saurashtra", "Sharada",
+        "Siddham", "Sinhala", "Syloti Nagari", "Syriac (Estrangela)", "Tagalog", "Takri", "Tamil",
+        "Tamil Brahmi", "Telugu", "Thai", "Tibetan", "Tirhuta (Maithili)", "Urdu", "Vatteluttu", "Wancho"
+    ]
+    return {"supported_scripts": sorted(scripts)}
 
-# Bhashini fallback
-async def call_bhashini_transliterate(text, source_script, target_script):
-    headers = {
-        "Authorization": f"Bearer {BHASHINI_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "text": text,
-        "sourceLanguage": source_script,
-        "targetLanguage": target_script
-    }
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(BHASHINI_ENDPOINT, json=payload, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-            return data.get("translatedText") or data.get("result") or ""
-    except Exception as e:
-        logging.error(f"Bhashini fallback failed: {e}")
-        return ""
-
-# Transliterate text
-@app.post("/transliterate")
-async def transliterate_text(req: TranslitRequest):
-    from_script = req.from_script or "autodetect"
-    if from_script.lower() == "auto":
-        from_script = "autodetect"
-
-    try:
-        result = transliterate.process(
-            from_script,
-            req.to_script,
-            req.text,
-            False,
-            pre_options=req.pre_options or [],
-            post_options=req.post_options or []
-        )
-        return {"transliteration": result}
-    except Exception as e:
-        logging.error(f"Aksharamukha error: {e}")
-        fallback = await call_bhashini_transliterate(req.text, from_script, req.to_script)
-        return {"transliteration": fallback or req.text}
-
-# OCR from image
+# 📷 OCR endpoint
 @app.post("/ocr_image")
 async def ocr_image(file: UploadFile = File(...)):
     try:
-        # Read and decode image
         img_bytes = await file.read()
         img_array = np.frombuffer(img_bytes, np.uint8)
         image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
         if image is None:
-            logging.error("Failed to decode image")
+            print("❌ Failed to decode image")
             return {"text": "", "error": "Invalid image format"}
 
-        logging.info(f"Image shape: {image.shape}")
+        print("✅ Image decoded:", image.shape)
 
-        # Preprocess
+        # Preprocessing: grayscale + thresholding
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+        thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
-        # OCR
-        text = pytesseract.image_to_string(gray, lang="eng+hin+kan+tel+tam")
-        logging.info(f"OCR raw output: {repr(text)}")
+        # OCR with expanded language support
+        text = pytesseract.image_to_string(
+            thresh,
+            lang="eng+hin+kan+tel+tam+mal+guj+ben+pan+ori+urd"
+        )
+        print("🧠 OCR output:", repr(text))
+
         clean_text = text.strip()
-
-        logging.info(f"OCR result: {clean_text}")
-
         if not clean_text:
-            return {"text": "", "error": "No text extracted"}
+            return {"text": "", "error": "OCR returned empty text"}
 
         return {"text": clean_text}
 
     except Exception as e:
-        logging.error(f"OCR error: {e}")
+        print("🔥 OCR error:", str(e))
         return {"text": "", "error": str(e)}
+      
+
+# 🔡 Transliteration model
+class TransliterationRequest(BaseModel):
+    text: str
+    to_script: str
+
+# 🔁 Transliteration endpoint (local Aksharamukha)
+@app.post("/transliterate")
+async def transliterate_local(req: TransliterationRequest):
+    try:
+        output = transliterate.process(
+            src="autodetect",
+            tgt=req.to_script,
+            txt=req.text,
+            nativize=True
+        )
+        return {"transliteration": output}
+    except Exception as e:
+        return {"transliteration": "", "error": str(e)}
