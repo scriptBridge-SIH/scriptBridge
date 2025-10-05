@@ -9,6 +9,9 @@ import logging
 import httpx
 import os
 from dotenv import load_dotenv
+import warnings
+warnings.filterwarnings("ignore", category=SyntaxWarning)
+
 
 logging.basicConfig(
     filename="transliteration.log",
