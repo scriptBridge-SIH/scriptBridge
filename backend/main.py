@@ -18,8 +18,7 @@ app.add_middleware(
 )
 
 import os
-pytesseract.pytesseract.tesseract_cmd = os.getenv("tesseract","TESSERACT_PATH")
-
+pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH", "tesseract")
 
 # 🎯 Script list for dropdown
 @app.get("/getScripts")
