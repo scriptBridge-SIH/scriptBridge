@@ -20,6 +20,7 @@ logging.basicConfig(
 load_dotenv()
 BHASHINI_API_KEY = os.getenv("BHASHINI_API_KEY")
 BHASHINI_ENDPOINT = os.getenv("BHASHINI_ENDPOINT")
+pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH", "/usr/bin/tesseract")
 
 app = FastAPI()
 
@@ -41,10 +42,10 @@ class TranslitRequest(BaseModel):
     post_options: list[str] | None = None
 
 # Get all supported scripts
-@app.get("/scripts")
+@app.get("/getScripts")
 async def get_scripts():
     try:
-        scripts = list(transliterate.getAvailableScripts().keys())
+        scripts = list(transliterate.Scripts)
         return {"supported_scripts": sorted(scripts)}
     except Exception as e:
         logging.error(f"Script fetch error: {e}")
@@ -94,10 +95,9 @@ async def transliterate_text(req: TranslitRequest):
         return {"transliteration": fallback or req.text}
 
 # OCR from image
-@app.post("/ocr")
+@app.post("/ocr_image")
 async def ocr_image(file: UploadFile = File(...)):
     try:
-        logging.info(f"OCR endpoint triggered with file: {file.filename}")
         img = np.frombuffer(await file.read(), np.uint8)
         image = cv2.imdecode(img, cv2.IMREAD_COLOR)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

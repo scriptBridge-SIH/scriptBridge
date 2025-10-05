@@ -21,7 +21,7 @@ export default function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/scripts`)
+    fetch(`${API_BASE}/getScripts`)
       .then((res) => res.json())
       .then((data) => {
         const sorted = [...(data.supported_scripts || [])].sort();
@@ -62,7 +62,7 @@ export default function App() {
     setError("");
 
     try {
-      const res = await fetch(`${API_BASE}/ocr`, {
+      const res = await fetch(`${API_BASE}/ocr_image`, {
         method: "POST",
         body: formData
       });
