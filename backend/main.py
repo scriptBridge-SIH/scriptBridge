@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -74,6 +75,8 @@ async def ocr_image(file: UploadFile = File(...)):
 class TransliterationRequest(BaseModel):
     text: str
     to_script: str
+    from_script: Optional[str] = "autodetect"
+
 
 # 🔁 Transliteration endpoint (local Aksharamukha)
 @app.post("/transliterate")
