@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 logging.basicConfig(
     filename="transliteration.log",
-    level=logging.ERROR,
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
@@ -118,6 +118,7 @@ async def ocr_image(file: UploadFile = File(...)):
 
         # OCR
         text = pytesseract.image_to_string(gray, lang="eng+hin+kan+tel+tam")
+        logging.info(f"OCR raw output: {repr(text)}")
         clean_text = text.strip()
 
         logging.info(f"OCR result: {clean_text}")
