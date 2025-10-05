@@ -17,7 +17,9 @@ app.add_middleware(
 )
 
 # Set Tesseract path for Windows
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+import os
+pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH", "tesseract")
+
 
 # 🎯 Script list for dropdown
 @app.get("/getScripts")
