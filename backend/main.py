@@ -85,7 +85,7 @@ async def transliterate_local(req: TransliterationRequest):
             src="autodetect",
             tgt=req.to_script,
             txt=req.text,
-            nativize=True
+            nativize=False
         )
         return {"transliteration": output}
     except Exception as e:
