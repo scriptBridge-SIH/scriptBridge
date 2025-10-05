@@ -26,14 +26,14 @@ pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH", "tesseract")
 @app.get("/getScripts")
 def get_scripts():
     scripts = [
-        "Ahom", "Arabic", "Assamese", "Balinese", "Bengali (Bangla)", "Brahmi", "Burmese (Myanmar)",
-        "Chakma", "Cham", "Devanagari", "Dogra", "Grantha", "Gujarati", "Hebrew", "Javanese", "Kaithi",
-        "Kannada", "Kharoshthi", "Khmer (Cambodian)", "Lao", "Lepcha", "Limbu", "Malayalam", "Modi",
-        "Mongolian (Ali Gali)", "Meetei Mayek (Manipuri)", "Multani", "Nandinagari", "Newa (Nepal Bhasa)",
-        "Oriya (Odia)", "Punjabi (Gurmukhi)", "Ranjana (Lantsa)", "Rejang", "Saurashtra", "Sharada",
-        "Siddham", "Sinhala", "Syloti Nagari", "Syriac (Estrangela)", "Tagalog", "Takri", "Tamil",
-        "Tamil Brahmi", "Telugu", "Thai", "Tibetan", "Tirhuta (Maithili)", "Urdu", "Vatteluttu", "Wancho"
-    ]
+    "Ahom", "Assamese", "Balinese", "Bengali (Bangla)", "Brahmi", "Burmese (Myanmar)",
+    "Chakma", "Cham", "Devanagari", "Dogra", "Grantha", "Gujarati", "Javanese", "Kaithi",
+    "Kannada", "Kharoshthi", "Khmer (Cambodian)", "Lao", "Lepcha", "Limbu", "Malayalam", "Modi",
+    "Mongolian (Ali Gali)", "Meetei Mayek (Manipuri)", "Multani", "Nandinagari", "Newa (Nepal Bhasa)",
+    "Oriya (Odia)", "Punjabi (Gurmukhi)", "Ranjana (Lantsa)", "Rejang", "Saurashtra", "Sharada",
+    "Siddham", "Sinhala", "Syloti Nagari", "Syriac (Estrangela)", "Tagalog", "Takri", "Tamil",
+    "Tamil Brahmi", "Telugu", "Thai", "Tibetan", "Tirhuta (Maithili)", "Vatteluttu", "Wancho"
+]
     return {"supported_scripts": sorted(scripts)}
 
 # 🔡 Transliteration model
