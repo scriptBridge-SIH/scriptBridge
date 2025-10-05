@@ -101,13 +101,32 @@ async def transliterate_text(req: TranslitRequest):
 @app.post("/ocr_image")
 async def ocr_image(file: UploadFile = File(...)):
     try:
-        img = np.frombuffer(await file.read(), np.uint8)
-        image = cv2.imdecode(img, cv2.IMREAD_COLOR)
+        # Read and decode image
+        img_bytes = await file.read()
+        img_array = np.frombuffer(img_bytes, np.uint8)
+        image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+
+        if image is None:
+            logging.error("Failed to decode image")
+            return {"text": "", "error": "Invalid image format"}
+
+        logging.info(f"Image shape: {image.shape}")
+
+        # Preprocess
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+        # OCR
         text = pytesseract.image_to_string(gray, lang="eng+hin+kan+tel+tam")
-        logging.info(f"OCR result: {text.strip()}")
-        return {"text": text.strip()}
+        clean_text = text.strip()
+
+        logging.info(f"OCR result: {clean_text}")
+
+        if not clean_text:
+            return {"text": "", "error": "No text extracted"}
+
+        return {"text": clean_text}
+
     except Exception as e:
         logging.error(f"OCR error: {e}")
         return {"text": "", "error": str(e)}
