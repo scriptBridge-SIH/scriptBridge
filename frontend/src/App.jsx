@@ -66,10 +66,18 @@ export default function App() {
         method: "POST",
         body: formData
       });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`);
+      }
+
       const j = await res.json();
       setText(j.text || "");
     } catch (err) {
-      setError("OCR error: " + err.message);
+      console.error("OCR error:", err);
+      setError(
+        "OCR failed. If you're using Brave or an ad blocker, try disabling shields or whitelisting this site."
+      );
     } finally {
       setOcrLoading(false);
     }
