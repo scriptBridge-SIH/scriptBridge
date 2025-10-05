@@ -62,25 +62,31 @@ export default function App() {
     setError("");
 
     try {
-      const res = await fetch(`${API_BASE}/ocr_image`, {
-        method: "POST",
-        body: formData
-      });
+  const res = await fetch(`${API_BASE}/ocr_image`, {
+    method: "POST",
+    body: formData
+  });
 
-      if (!res.ok) {
-        throw new Error(`Server responded with ${res.status}`);
-      }
+  if (!res.ok) {
+    throw new Error(`Server responded with ${res.status}`);
+  }
 
-      const j = await res.json();
-      setText(j.text || "");
-    } catch (err) {
-      console.error("OCR error:", err);
-      setError(
-        "OCR failed. If you're using Brave or an ad blocker, try disabling shields or whitelisting this site."
-      );
-    } finally {
-      setOcrLoading(false);
-    }
+  const j = await res.json();
+
+  if (!j.text) {
+    throw new Error("No text returned from OCR");
+  }
+
+  setText(j.text);
+} catch (err) {
+  console.error("OCR error:", err);
+  setError(
+    "OCR failed. If you're using Brave or an ad blocker, try disabling shields or whitelisting this site."
+  );
+} finally {
+  setOcrLoading(false);
+}
+
   }
 
   return (
